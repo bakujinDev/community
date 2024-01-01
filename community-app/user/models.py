@@ -47,11 +47,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         editable=False,
         unique=True,
     )
+    
     phone = models.CharField(
         max_length=15,
         verbose_name="전화번호",
-        unique=True,
+        null=True,
+        blank=True,
     )
+    phone_verification = models.BooleanField(default=False, verbose_name="전화번호 인증여부")
+    phone_verify_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="전화번호 인증시간"
+    )
+
     email = models.EmailField(
         verbose_name="이메일",
         max_length=255,

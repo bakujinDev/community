@@ -45,4 +45,3 @@ class UserAdmin(admin.ModelAdmin):
         "groups",
         "user_permissions",
     ]
-    
