@@ -1,13 +1,12 @@
 from datetime import datetime
 from user.models import User
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
 )
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from user.serializers.v1 import (
     UserEmailValidateSerializer,
     PasswordValidateSerializer,
@@ -118,3 +117,16 @@ class UserLoginViewSet(viewsets.ModelViewSet):
         )
 
 
+class UserInfoViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        return Response(
+            {
+                "user": UserReturnV1Serializer(user).data,
+            },
+            status=status.HTTP_200_OK,
+        )
