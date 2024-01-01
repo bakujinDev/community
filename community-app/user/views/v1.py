@@ -87,34 +87,41 @@ class UserLoginViewSet(viewsets.ModelViewSet):
         serializer = UserPhoneLoginsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = User.objects.get(phone=serializer.validated_data["phone"])
+        try:
+            user = User.objects.get(phone=serializer.validated_data["phone"])
 
-        if user.is_active is False:
-            return Response(
-                {"message": "탈퇴 또는 관리자에 의해 중지된 계정입니다."},
-                status=status.HTTP_401_UNAUTHORIZED,
+            if user.is_active is False:
+                return Response(
+                    {"message": "탈퇴 또는 관리자에 의해 중지된 계정입니다."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+            is_check_password = user.check_password(
+                serializer.validated_data["password"]
             )
+            if is_check_password is False:
+                return Response(
+                    {
+                        "message": "비밀번호가 일치하지 않아요.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-        is_check_password = user.check_password(serializer.validated_data["password"])
-        if is_check_password is False:
+            user.last_login = datetime.now()
+            user.save(update_fields=["last_login"])
+            token, _ = Token.objects.get_or_create(user=user)
+
             return Response(
                 {
-                    "message": "비밀번호가 일치하지 않아요.",
+                    "token": token.key,
+                    "user": UserReturnV1Serializer(user).data,
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_200_OK,
             )
-
-        user.last_login = datetime.now()
-        user.save(update_fields=["last_login"])
-        token, _ = Token.objects.get_or_create(user=user)
-
-        return Response(
-            {
-                "token": token.key,
-                "user": UserReturnV1Serializer(user).data,
-            },
-            status=status.HTTP_200_OK,
-        )
+        except User.DoesNotExist:
+            return Response(
+                {"message": "가입되지 않은 유저 입니다."}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class UserInfoViewSet(viewsets.ModelViewSet):
