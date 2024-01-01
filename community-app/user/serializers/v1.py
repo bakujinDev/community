@@ -60,3 +60,8 @@ class UserReturnV1Serializer(serializers.ModelSerializer):
             "user_permissions",
             "groups",
         )
+
+
+class UserPhoneLoginsSerializer(serializers.Serializer):
+    phone = serializers.CharField()
+    password = serializers.CharField()
