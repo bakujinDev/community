@@ -47,7 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         editable=False,
         unique=True,
     )
-    
+
     phone = models.CharField(
         max_length=15,
         verbose_name="전화번호",
